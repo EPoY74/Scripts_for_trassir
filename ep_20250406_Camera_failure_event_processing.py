@@ -18,13 +18,15 @@ events_to_handle = [
 
 
 def f(ev):
+    """
+    Обрабатывает требуемые типы событий и пишет параметры события в файл
+    Processes required event types and writes event parameters to a file
+    """
     with open("errors.log", "a", buffering=1) as f:
         try:
             f.write(
                 "\nВремя: %s "
-                % time.strftime(
-                    "%H:%M:%S %d.%m.%Y", time.gmtime(ev.ts / 1000000)
-                )  # localtime было
+                % time.strftime("%H:%M:%S %d.%m.%Y", time.gmtime(ev.ts / 1000000))
             )
             message_to_write = "Имя: %s, событие: %s, ИД камера: %s" % (
                 ev.origin_object.name,
@@ -40,11 +42,15 @@ def f(ev):
 
 
 def on_event(ev):
-    # Перебираем все атрибуты события
+    """
+    Обрабатывает все атрибуты события и пишет в файл
+    Processes all event attributes and writes to a file
+    """
+    #  Перебираем все атрибуты события
     for attr in dir(ev):
-        if not attr.startswith("__"):  #  Пропускаю служебные атрибуты
+        #  Пропускаю служебные атрибуты
+        if not attr.startswith("__"):
             try:
-                # message("%s: %s" % (attr, getattr(ev, attr)))  # Форматирование для Python 2.7
                 with open("events.log", "a") as f:
                     f.write("%s: %s\n" % (attr, getattr(ev, attr)))
             except Exception as e:
@@ -53,6 +59,3 @@ def on_event(ev):
 
 for event in events_to_handle:
     activate_on_events(event, "", f)
-
-# for event in events_to_handle:
-#     activate_on_events(event, "", on_event)
