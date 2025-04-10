@@ -14,7 +14,6 @@ import time
 </parameters>
 """
 
-
 events_to_handle = [
     "Signal Lost",
     "Signal Restored",
@@ -22,8 +21,7 @@ events_to_handle = [
     # "Connection Established",
     # "Connection Lost",
 ]
-# /home/trassir/shots/errors.log
-# "/G6sKoF8w/system_wide_options"[screenshots_folder]
+
 ERR_FILE_NAME = "errors.log"
 
 
@@ -77,18 +75,26 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     Пишу требуемые события по неисправностям
     камер в файл errors.log
     """
-    if "/" in get_screenshot_folder(ev.origin_server):
-        path_spacer = "/"
-    else:
-        path_spacer = "\\"
 
-    full_err_filename = (
-        get_screenshot_folder(ev.origin_server)
-        + path_spacer
-        + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
-        + err_log_filename
+    sch_folder = str(
+        settings("/client/system_wide_options")["screenshots_folder"]  # noqa
     )
+    if len(sch_folder) > 0:
+        full_err_filename = (
+            get_screenshot_folder("client")
+            + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
+            + err_log_filename
+        )
+    else:
+        full_err_filename = (
+            get_screenshot_folder(ev.origin_server)
+            + "/"
+            + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
+            + err_log_filename
+        )
+
     message_to_write = ""
+
     with open(full_err_filename, "a", buffering=1) as err_log_file:
         try:
             err_log_file.write(
@@ -96,7 +102,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
                     time.strftime(
                         "%d.%m.%Y %H:%M:%S ", time.gmtime(ev.ts / 1000000)
                     )
-                )  # localtime было
+                )
             )
             message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
                 ev.origin_object.name, ev.type
@@ -111,7 +117,6 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
 
             server_name = get_server_name(ev.origin_server)
             err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
-            # err_log_file.write("Имя сервера: %s " % server_name)
         except Exception as err:
             message_error = "Ошибка при логировании события {}\n".format(  # noqa
                 str(err)
