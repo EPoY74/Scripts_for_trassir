@@ -25,8 +25,10 @@ def f(ev):
     with open("errors.log", "a", buffering=1) as f:
         try:
             f.write(
-                "\nВремя: %s "
-                % time.strftime("%H:%M:%S %d.%m.%Y", time.gmtime(ev.ts / 1000000))
+                "\n Время: %s "
+                % time.strftime(
+                    "%H:%M:%S %d.%m.%Y", time.gmtime(ev.ts / 1000000)
+                )
             )
             message_to_write = "Имя: %s, событие: %s, ИД камера: %s" % (
                 ev.origin_object.name,
@@ -54,7 +56,9 @@ def on_event(ev):
                 with open("events.log", "a") as f:
                     f.write("%s: %s\n" % (attr, getattr(ev, attr)))
             except Exception as e:
-                message("Ошибка при обработке атрибута %s: %s" % (attr, str(e)))
+                message(
+                    "Ошибка при обработке атрибута %s: %s" % (attr, str(e))
+                )
 
 
 for event in events_to_handle:
