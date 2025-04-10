@@ -69,7 +69,7 @@ def get_screenshot_folder(server_id):
     screenshot_folder_path = get_linux_path(
         "/", server_id, "system_wide_options"
     )
-    return str(settings(screenshot_folder_path)["screenshots_folder"])  # noqa
+    return str(settings(screenshot_folder_path)["screenshots_folder"])
 
 
 def handle_camera_event(ev, err_log_filename, is_full_info=False):
@@ -77,8 +77,14 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     Пишу требуемые события по неисправностям
     камер в файл errors.log
     """
+    if "/" in get_screenshot_folder(ev.origin_server):
+        path_spacer = "/"
+    else:
+        path_spacer = "\\"
+
     full_err_filename = (
         get_screenshot_folder(ev.origin_server)
+        + path_spacer
         + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
         + err_log_filename
     )
