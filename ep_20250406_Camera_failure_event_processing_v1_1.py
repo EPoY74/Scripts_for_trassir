@@ -69,7 +69,7 @@ def get_screenshot_folder(server_id):
     screenshot_folder_path = get_linux_path(
         "/", server_id, "system_wide_options"
     )
-    return str(settings(screenshot_folder_path)["screenshots_folder"])
+    return str(settings(screenshot_folder_path)["screenshots_folder"])  # noqa
 
 
 def handle_camera_event(ev, err_log_filename, is_full_info=False):
