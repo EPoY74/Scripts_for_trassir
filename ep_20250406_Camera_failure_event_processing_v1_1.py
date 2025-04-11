@@ -81,9 +81,13 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     # Проверяю наличие папки со скриншотами по уникальному
     # адресу, характерному только для windows клиента
     server_name = get_server_name(ev.origin_server)
-    sch_folder = str(
-        settings("/client/system_wide_options")["screenshots_folder"]  # noqa
-    )
+    try:
+        sch_folder = str(
+            settings("/client/system_wide_options")["screenshots_folder"]  # noqa
+        )
+    except:
+        sch_folder = ""
+    # message(sch_folder)
     # Формирую имя и путь файла для логирования
     if len(sch_folder) > 0:
         full_err_filename = (
@@ -92,6 +96,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
             + err_log_filename
         )
+        # message(full_err_filename)
     else:
         full_err_filename = (
             get_screenshot_folder(ev.origin_server)
