@@ -87,7 +87,8 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     # Формирую имя и путь файла для логирования
     if len(sch_folder) > 0:
         full_err_filename = (
-            sch_folder
+            sch_folder.replace("/", "\\")
+            + "\\"
             + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
             + err_log_filename
         )
@@ -112,6 +113,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
                 ev.origin_object.name, ev.type
             )
+            message(message_to_write)
             err_log_file.write(message_to_write)
             if is_full_info:
                 message_to_write = "ИД камера: {} , ИД сервера: {} , ".format(  # noqa
