@@ -14,6 +14,7 @@ import time
 </parameters>
 """
 
+
 events_to_handle = [
     "Signal Lost",
     "Signal Restored",
@@ -21,7 +22,8 @@ events_to_handle = [
     # "Connection Established",
     # "Connection Lost",
 ]
-
+# /home/trassir/shots/errors.log
+# "/G6sKoF8w/system_wide_options"[screenshots_folder]
 ERR_FILE_NAME = "errors.log"
 
 
@@ -29,7 +31,7 @@ def get_linux_path(*args):
     """
     Формирую путь для использования на линукс
     сервере видеонаблюдения. Скрипт запускается на
-    ПК windows, поэтому путь ормируется неправильно.
+    ПК windows, поэтому путь формируется неправильно.
     Оболочки trassir под Линукс - нет
     """
 
@@ -67,7 +69,7 @@ def get_screenshot_folder(server_id):
     screenshot_folder_path = get_linux_path(
         "/", server_id, "system_wide_options"
     )
-    return str(settings(screenshot_folder_path)["screenshots_folder"])  # noqa
+    return str(settings(screenshot_folder_path)["screenshots_folder"])
 
 
 def handle_camera_event(ev, err_log_filename, is_full_info=False):
@@ -76,9 +78,13 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     камер в файл errors.log
     """
 
+    # Проверяю наличие папки со скриншотами по уникальному
+    # адресу, характерному только для windows клиента
+    server_name = get_server_name(ev.origin_server)
     sch_folder = str(
-        settings("/client/system_wide_options")["screenshots_folder"]  # noqa
+        settings("/client/system_wide_options")["screenshots_folder"]
     )
+    # Формирую имя и путь файла для логирования
     if len(sch_folder) > 0:
         full_err_filename = (
             get_screenshot_folder("client")
@@ -90,11 +96,10 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             get_screenshot_folder(ev.origin_server)
             + "/"
             + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
+            + server_name
             + err_log_filename
         )
-
     message_to_write = ""
-
     with open(full_err_filename, "a", buffering=1) as err_log_file:
         try:
             err_log_file.write(
@@ -102,7 +107,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
                     time.strftime(
                         "%d.%m.%Y %H:%M:%S ", time.gmtime(ev.ts / 1000000)
                     )
-                )
+                )  # localtime было
             )
             message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
                 ev.origin_object.name, ev.type
@@ -114,9 +119,8 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
                     ev.origin_server,
                 )
                 err_log_file.write(message_to_write)
-
-            server_name = get_server_name(ev.origin_server)
             err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
+            # err_log_file.write("Имя сервера: %s " % server_name)
         except Exception as err:
             message_error = "Ошибка при логировании события {}\n".format(  # noqa
                 str(err)
