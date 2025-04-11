@@ -85,7 +85,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
         sch_folder = str(
             settings("/client/system_wide_options")["screenshots_folder"]  # noqa
         )
-    except:
+    except Exception:
         sch_folder = ""
     # message(sch_folder)
     # Формирую имя и путь файла для логирования
