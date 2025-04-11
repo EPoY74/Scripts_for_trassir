@@ -69,7 +69,7 @@ def get_screenshot_folder(server_id):
     screenshot_folder_path = get_linux_path(
         "/", server_id, "system_wide_options"
     )
-    return str(settings(screenshot_folder_path)["screenshots_folder"])
+    return str(settings(screenshot_folder_path)["screenshots_folder"])  # noqa
 
 
 def handle_camera_event(ev, err_log_filename, is_full_info=False):
@@ -82,12 +82,12 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     # адресу, характерному только для windows клиента
     server_name = get_server_name(ev.origin_server)
     sch_folder = str(
-        settings("/client/system_wide_options")["screenshots_folder"]
+        settings("/client/system_wide_options")["screenshots_folder"]  # noqa
     )
     # Формирую имя и путь файла для логирования
     if len(sch_folder) > 0:
         full_err_filename = (
-            get_screenshot_folder("client")
+            sch_folder
             + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
             + err_log_filename
         )
