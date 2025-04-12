@@ -72,6 +72,41 @@ def get_screenshot_folder(server_id):
     return str(settings(screenshot_folder_path)["screenshots_folder"])  # noqa
 
 
+def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
+    """
+    Пишет информацию в файл, вынесена, так как требуется дополнительная
+    обработка ошибок, не во всех серверах  есть папка со 
+    скриншотами, хотя путь к ней моществует
+    """
+    with open(full_err_filename, "a", buffering=1) as err_log_file:
+        try:
+            err_log_file.write(
+                "\n{} ".format(
+                    time.strftime(
+                        "%d.%m.%Y %H:%M:%S ", time.gmtime(ev.ts / 1000000)
+                    )
+                )  # localtime было
+            )
+            message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
+                ev.origin_object.name, ev.type
+            )
+            message(message_to_write)  # noqa
+            err_log_file.write(message_to_write)
+            if is_full_info:
+                message_to_write = "ИД камера: {} , ИД сервера: {} , ".format(  # noqa
+                    ev.origin,
+                    ev.origin_server,
+                )
+                err_log_file.write(message_to_write)
+            err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
+            # err_log_file.write("Имя сервера: %s " % server_name)
+        except Exception as err:
+            message_error = "Ошибка при логировании события {}\n".format(  # noqa
+                str(err)
+            )
+            err_log_file.write(message_error)
+
+
 def handle_camera_event(ev, err_log_filename, is_full_info=False):
     """
     Пишу требуемые события по неисправностям
@@ -102,37 +137,20 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             get_screenshot_folder(ev.origin_server)
             + "/"
             + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
+            + "_"
             + server_name
+            + "_"
             + err_log_filename
         )
     message_to_write = ""
-    with open(full_err_filename, "a", buffering=1) as err_log_file:
-        try:
-            err_log_file.write(
-                "\n{} ".format(
-                    time.strftime(
-                        "%d.%m.%Y %H:%M:%S ", time.gmtime(ev.ts / 1000000)
-                    )
-                )  # localtime было
-            )
-            message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
-                ev.origin_object.name, ev.type
-            )
-            message(message_to_write)
-            err_log_file.write(message_to_write)
-            if is_full_info:
-                message_to_write = "ИД камера: {} , ИД сервера: {} , ".format(  # noqa
-                    ev.origin,
-                    ev.origin_server,
-                )
-                err_log_file.write(message_to_write)
-            err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
-            # err_log_file.write("Имя сервера: %s " % server_name)
-        except Exception as err:
-            message_error = "Ошибка при логировании события {}\n".format(  # noqa
-                str(err)
-            )
-            err_log_file.write(message_error)
+    try:
+        write_err_to_file(
+            ev,
+            is_full_info,
+            server_name,
+            full_err_filename
+        )
+    except 
 
 
 for event in events_to_handle:
