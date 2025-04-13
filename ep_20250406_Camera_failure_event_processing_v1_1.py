@@ -103,7 +103,7 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
                 err_log_file.write(message_to_write)
             err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
             # err_log_file.write("Имя сервера: %s " % server_name)
-        except IOError as err:  # noqa
+        except (IOError, KeyError, TypeError) as err:  # noqa
             message_error = "Ошибка при логировании события {}\n".format(  # noqa
                 str(err)
             )
@@ -123,7 +123,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
         sch_folder = str(
             settings("/client/system_wide_options")["screenshots_folder"]  # noqa
         )
-    except IOError as err:  # noqa
+    except (IOError, KeyError, TypeError) as err:  # noqa
         message(err)  # noqa
         sch_folder = ""
 
