@@ -9,6 +9,7 @@ import time
 """
 <parameters>
         <company>EugeniiPetrov</company>
+        <email>p174@mail.ru</email>
         <title>Receive_events</title>
         <version>1.0</version>
 </parameters>
@@ -75,9 +76,11 @@ def get_screenshot_folder(server_id):
 def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
     """
     Пишет информацию в файл, вынесена, так как требуется дополнительная
-    обработка ошибок, не во всех серверах  есть папка со 
+    обработка ошибок, не во всех серверах  есть папка со
     скриншотами, хотя путь к ней моществует
     """
+
+    message_to_write = ""
     with open(full_err_filename, "a", buffering=1) as err_log_file:
         try:
             err_log_file.write(
@@ -100,7 +103,7 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
                 err_log_file.write(message_to_write)
             err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
             # err_log_file.write("Имя сервера: %s " % server_name)
-        except Exception as err:
+        except IOError as err:  # noqa
             message_error = "Ошибка при логировании события {}\n".format(  # noqa
                 str(err)
             )
@@ -120,9 +123,10 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
         sch_folder = str(
             settings("/client/system_wide_options")["screenshots_folder"]  # noqa
         )
-    except Exception:
+    except IOError as err:  # noqa
+        message(err)  # noqa
         sch_folder = ""
-    # message(sch_folder)
+
     # Формирую имя и путь файла для логирования
     if len(sch_folder) > 0:
         full_err_filename = (
@@ -142,15 +146,11 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             + "_"
             + err_log_filename
         )
-    message_to_write = ""
     try:
-        write_err_to_file(
-            ev,
-            is_full_info,
-            server_name,
-            full_err_filename
-        )
-    except 
+        write_err_to_file(ev, is_full_info, server_name, full_err_filename)
+    except IOError as err:  # noqa
+        message(str(err))  # noqa
+        raise Exception(err)
 
 
 for event in events_to_handle:
