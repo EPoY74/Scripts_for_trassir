@@ -1,45 +1,65 @@
-import click
-import pandas as pd
 from datetime import datetime
 
-# Чтение данных (пример для файла 'events.log')
-data = []
-with open("20250414_errors.log") as file:
-    for line in file:
-        click.echo(len(line))
+import click
+import pandas as pd
 
-        # if len(line) <= 1:
-        #     continue
+# Загрузка данных
+data = []
+with open("events.log") as file:
+    for line in file:
         parts = line.strip().split(",")
-        click.echo(parts)
         time_str = parts[0].strip()
         name = parts[1].split(":")[1].strip()
         event = parts[2].split(":")[1].strip()
         server = parts[3].split(":")[1].strip()
-
         time = datetime.strptime(time_str, "%d.%m.%Y %H:%M:%S")
         data.append([time, name, event, server])
 
 df = pd.DataFrame(data, columns=["Time", "Name", "Event", "Server"])
+df = df.sort_values(["Name", "Time"]).reset_index(
+    drop=True
+)  # Сортировка по устройству и времени
 
-# Расчет длительности перерывов
-lost_times = df[df["Event"] == "Signal Lost"].copy()
-restored_times = df[df["Event"] == "Signal Restored"].copy()
+# Словари для хранения результатов
+paired_events = {name: [] for name in df["Name"].unique()}
+unpaired_lost = {name: [] for name in df["Name"].unique()}
 
-lost_times["NextRestore"] = restored_times["Time"].values
-lost_times["Downtime"] = lost_times["NextRestore"] - lost_times["Time"]
+# Обработка для каждого устройства отдельно
+for name, group in df.groupby("Name"):
+    events = group.to_dict("records")
+    i = 0
+    while i < len(events):
+        if events[i]["Event"] == "Signal Lost":
+            lost_event = events[i]
+            found_restored = False
 
-# Результаты
-click.echo("Общее количество сбоев:", len(lost_times))
-click.echo("Средняя длительность перерыва:", lost_times["Downtime"].mean())
-click.echo("Максимальный перерыв:", lost_times["Downtime"].max())
-click.echo("Минимальный перерыв:", lost_times["Downtime"].min())
+            # Ищем ближайший Restored для этого устройства
+            j = i + 1
+            while j < len(events):
+                if events[j]["Event"] == "Signal Restored":
+                    paired_events[name].append((lost_event, events[j]))
+                    found_restored = True
+                    i = j  # Переходим к событию после Restored
+                    break
+                j += 1
 
-# График временных промежутков
-import matplotlib.pyplot as plt
+            if not found_restored:
+                unpaired_lost[name].append(lost_event)
+        i += 1
 
-lost_times["DowntimeSeconds"] = lost_times["Downtime"].dt.total_seconds()
-plt.plot(lost_times["Time"], lost_times["DowntimeSeconds"], "o-")
-plt.xlabel("Время")
-plt.ylabel("Длительность перерыва (секунды)")
-plt.show()
+# Вывод результатов
+click.echo("=== Найденные пары (Lost -> Restored) ===")
+for name, pairs in paired_events.items():
+    if pairs:
+        click.echo(f"\nУстройство: {name}")
+        for lost, restored in pairs:
+            click.echo(
+                f"  Lost: {lost['Time']} -> Restored: {restored['Time']}"
+            )
+
+click.echo("\n=== Незавершенные события (Signal Lost без пары) ===")
+for name, unpaired in unpaired_lost.items():
+    if unpaired:
+        click.echo(f"\nУстройство: {name}")
+        unpaired_df = pd.DataFrame(unpaired)
+        click.echo(unpaired_df)
