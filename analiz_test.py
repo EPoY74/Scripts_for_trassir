@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import click
+import matplotlib.pyplot as plt
 import pandas as pd
 
 # Загрузка данных
@@ -16,15 +17,13 @@ with open("20250414_errors.log") as file:
         data.append([time, name, event, server])
 
 df = pd.DataFrame(data, columns=["Time", "Name", "Event", "Server"])
-df = df.sort_values(["Name", "Time"]).reset_index(
-    drop=True
-)  # Сортировка по устройству и времени
+df = df.sort_values(["Name", "Time"]).reset_index(drop=True)
 
-# Словари для хранения результатов
+# Словари для хранения пар и незавершенных событий
 paired_events = {name: [] for name in df["Name"].unique()}
 unpaired_lost = {name: [] for name in df["Name"].unique()}
 
-# Обработка для каждого устройства отдельно
+# Обработка для каждого устройства
 for name, group in df.groupby("Name"):
     events = group.to_dict("records")
     i = 0
@@ -33,7 +32,6 @@ for name, group in df.groupby("Name"):
             lost_event = events[i]
             found_restored = False
 
-            # Ищем ближайший Restored для этого устройства
             j = i + 1
             while j < len(events):
                 if events[j]["Event"] == "Signal Restored":
@@ -47,17 +45,39 @@ for name, group in df.groupby("Name"):
                 unpaired_lost[name].append(lost_event)
         i += 1
 
-# Вывод результатов
-click.echo("=== Найденные пары (Lost -> Restored) ===")
+# Создаем DataFrame с длительностями перерывов
+downtime_data = []
 for name, pairs in paired_events.items():
-    if pairs:
-        click.echo(f"\nУстройство: {name}")
-        for lost, restored in pairs:
-            click.echo(
-                f"  Lost: {lost['Time']} -> Restored: {restored['Time']}"
-            )
+    for lost, restored in pairs:
+        downtime = restored["Time"] - lost["Time"]
+        downtime_data.append(
+            {"Name": name, "Time": lost["Time"], "Downtime": downtime}
+        )
 
-click.echo("\n=== Незавершенные события (Signal Lost без пары) ===")
+lost_times = pd.DataFrame(downtime_data)
+
+# Расчет статистики
+if not lost_times.empty:
+    click.echo("\n=== Статистика по перерывам ===")
+    click.echo("Общее количество сбоев:", len(lost_times))
+    click.echo("Средняя длительность перерыва:", lost_times["Downtime"].mean())
+    click.echo("Максимальный перерыв:", lost_times["Downtime"].max())
+    click.echo("Минимальный перерыв:", lost_times["Downtime"].min())
+
+    # Визуализация
+    lost_times["DowntimeSeconds"] = lost_times["Downtime"].dt.total_seconds()
+    plt.figure(figsize=(10, 5))
+    plt.plot(lost_times["Time"], lost_times["DowntimeSeconds"], "o-")
+    plt.xlabel("Время")
+    plt.ylabel("Длительность перерыва (секунды)")
+    plt.title("Длительность перерывов по времени")
+    plt.grid(True)
+    plt.show()
+else:
+    click.echo("Нет данных для построения статистики.")
+
+# Вывод незавершенных событий
+click.echo("\n=== Незавершенные события ===")
 for name, unpaired in unpaired_lost.items():
     if unpaired:
         click.echo(f"\nУстройство: {name}")
