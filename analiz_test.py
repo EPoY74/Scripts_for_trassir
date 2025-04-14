@@ -5,7 +5,7 @@ import pandas as pd
 
 # Загрузка данных
 data = []
-with open("events.log") as file:
+with open("20250414_errors.log") as file:
     for line in file:
         parts = line.strip().split(",")
         time_str = parts[0].strip()
