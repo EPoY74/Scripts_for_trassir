@@ -86,7 +86,7 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
             err_log_file.write(
                 "\n{} ".format(
                     time.strftime(
-                        "%d.%m.%Y %H:%M:%S ", time.gmtime(ev.ts / 1000000)
+                        "%d.%m.%Y %H:%M:%S, ", time.gmtime(ev.ts / 1000000)
                     )
                 )  # localtime было
             )
@@ -133,9 +133,9 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             sch_folder.replace("/", "\\")
             + "\\"
             + str(time.strftime("%Y%m%d", time.gmtime(ev.ts / 1000000)))
+            + "_"
             + err_log_filename
         )
-        # message(full_err_filename)
     else:
         full_err_filename = (
             get_screenshot_folder(ev.origin_server)
