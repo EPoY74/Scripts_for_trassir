@@ -59,10 +59,12 @@ lost_times = pd.DataFrame(downtime_data)
 # Расчет статистики
 if not lost_times.empty:
     click.echo("\n=== Статистика по перерывам ===")
-    click.echo("Общее количество сбоев:", len(lost_times))
-    click.echo("Средняя длительность перерыва:", lost_times["Downtime"].mean())
-    click.echo("Максимальный перерыв:", lost_times["Downtime"].max())
-    click.echo("Минимальный перерыв:", lost_times["Downtime"].min())
+    click.echo(f"Общее количество сбоев: {str(len(lost_times))}")
+    click.echo(
+        f"Средняя длительность перерыва: {str(lost_times['Downtime'].mean())}"
+    )
+    click.echo(f"Максимальный перерыв: {lost_times['Downtime'].max()}")
+    click.echo(f"Минимальный перерыв: {lost_times['Downtime'].min()}")
 
     # Визуализация
     lost_times["DowntimeSeconds"] = lost_times["Downtime"].dt.total_seconds()
