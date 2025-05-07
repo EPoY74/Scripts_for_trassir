@@ -17,10 +17,21 @@ import time
 """
 
 # Переопределяю на более человекочитаемые имена 
-# и в том числеЮ .что бы в vscode было меньше ошибок, 
+# и в том числе, что бы в vscode было меньше ошибок, 
 # так как message и settings это встроенные функции в Trassir
-message_to_user = message
-server_settings = settings
+
+# Вывод пропадающего сообщения в трей (справа внизу экрана)
+message_to_user = message  # type: ignore # noqa 
+
+# Доступ к натройкам сервера
+server_settings = settings # type: ignore # noqa
+
+class FileHandleError(Exception):
+    """
+    Для пробрасывания сообщений с моим описанием ошибки
+    """
+    pass
+
 
 events_to_handle = [
     "Signal Lost",
@@ -87,8 +98,8 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
     """
 
     message_to_write = ""
-    with open(full_err_filename, "a", buffering=1) as err_log_file:
-        try:
+    try:
+        with open(full_err_filename, "a", buffering=1) as err_log_file:
             err_log_file.write(
                 "\n{} ".format(
                     time.strftime(
@@ -109,11 +120,12 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
                 err_log_file.write(message_to_write)
             err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
             # err_log_file.write("Имя сервера: %s " % server_name)
-        except (IOError, KeyError, TypeError) as err:  # noqa
-            message_error = "Ошибка при логировании события {}\n".format(  # noqa
-                str(err)
-            )
-            err_log_file.write(message_error)
+    except (IOError, KeyError, TypeError) as err:  # noqa
+        message_error = "Ошибка при логировании события {}\n".format(  # noqa
+            str(err)
+        )
+        message_to_user(message_error)
+        raise(FileHandleError(message_error)) from err
 
 
 def get_os():
@@ -217,14 +229,12 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             + "_"
             + err_log_filename
         )
-    # try:
     write_err_to_file(ev, is_full_info, server_name, full_err_filename)
-    #except IOError as err:  # noqa
-     #   message_to_user(str(err))  # noqa
-      #  raise Exception(err)
 
 
 for event in events_to_handle:
-    activate_on_events(  # noqa
+    # Это активаци по событию в журнале.
+    # Формируется Трассиром 
+    activate_on_events(  # noqa # type: ignore
         event, "", lambda ev: handle_camera_event(ev, ERR_FILE_NAME)
     )
