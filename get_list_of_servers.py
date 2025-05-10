@@ -22,6 +22,8 @@
 #  Имя файла, куда пишем и режим его открытия
 PATH_AND_FILENAME_TO_WRITE = "/tmp/servers_list.txt"
 FILE_OPENING_MODE = "a"
+TARGET_COFINURATION_OBJECT = "Channel"
+
 message_to_user = message  #  noqa  #  type: ignore
 
 class FileErrorCustom(Exception):
@@ -37,7 +39,7 @@ def main():
     основной код программы
     """
     # objects_list is internal trassirs function
-    list_of_servers = objects_list("Server")  # noqa # type: ignore
+    list_of_servers = objects_list(TARGET_COFINURATION_OBJECT)  # noqa # type: ignore
     try:
         with open(
             PATH_AND_FILENAME_TO_WRITE, FILE_OPENING_MODE
@@ -57,8 +59,11 @@ def main():
         raise (FileErrorCustom(err))  # noqa
 
 
-if __name__ == "__main__":
-    """
-    Точка входа в программу
-    """
-    main()
+
+#  Это не подходит, так как это не запускается, как основной скрипт
+#  if __name__ == "__main__":
+"""
+Точка входа в программу
+"""
+message_to_user("Запуск системы логирования определенных настроек")
+main()
