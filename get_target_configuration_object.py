@@ -43,7 +43,7 @@ def main():
     configuration_oblects = objects_list(TARGET_COFINURATION_OBJECT)  # noqa # type: ignore
     try:
         with open(
-            PATH_AND_FILENAME_TO_WRITE, FILE_OPENING_MODE
+            PATH_AND_FILENAME_TO_WRITE, FILE_OPENING_MODE, buffering=1
         ) as file_for_info:
             # pass
             for index, enum_object_info in enumerate(
