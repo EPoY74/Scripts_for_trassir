@@ -12,7 +12,7 @@ import time
         <company>EugeniiPetrov</company>
         <email>p174@mail.ru</email>
         <title>Receive_events</title>
-        <version>1.0</version>
+        <version>1.2</version>
 </parameters>
 """
 
@@ -23,7 +23,7 @@ import time
 # Вывод пропадающего сообщения в трей (справа внизу экрана)
 message_to_user = message  # type: ignore # noqa 
 
-# Доступ к натройкам сервера
+# Доступ к настройкам сервера
 server_settings = settings # type: ignore # noqa
 
 class FileHandleError(Exception):
@@ -94,7 +94,7 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
     """
     Пишет информацию в файл, вынесена, так как требуется дополнительная
     обработка ошибок, не во всех серверах  есть папка со
-    скриншотами, хотя путь к ней моществует
+    скриншотами, хотя путь к ней существует
     """
 
     message_to_write = ""
@@ -125,7 +125,11 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
             str(err)
         )
         message_to_user(message_error)
-        raise(FileHandleError(message_error)) from err
+        #  Написано для пайтона 2.7. там конструкции  raise ... from ... нет
+        #  и вызывает ошибку
+        #  Written for Python 2.7 — raise ... from ... syntax
+        #  is not supported and causes an error
+        raise(FileHandleError(message_error)) # noqa
 
 
 def get_os():
@@ -191,7 +195,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
         err_filelog_folder = ""
     if is_client and (os_system_name == "Linux") :
         err_filelog_folder = get_linux_document_folder_path()
-        message_to_user("Пишу в папку {}".format(err_filelog_folder)) # noqa
+        # message_to_user("Пишу в папку {}".format(err_filelog_folder)) # noqa
         
 
 
@@ -199,7 +203,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     if ((len(err_filelog_folder) > 0) 
         and (is_client is False)
         and (os_system_name == "Windows")):
-        message_to_user("Client False")
+        # message_to_user("Client False")
         full_err_filename = (
             err_filelog_folder.replace("/", "\\")
             + "\\"
@@ -210,7 +214,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     if ((len(err_filelog_folder) > 0) 
         and is_client
         and (os_system_name == "Linux")):
-        message_to_user("Client True")
+        # message_to_user("Client True")
         full_err_filename = (
             err_filelog_folder
             + "/"
@@ -219,7 +223,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             + err_log_filename
         )
     else:
-        message_to_user("Client Else")
+        # message_to_user("Client Else")
         full_err_filename = (
             get_screenshot_folder(ev.origin_server)
             + "/"
@@ -233,7 +237,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
 
 
 for event in events_to_handle:
-    # Это активаци по событию в журнале.
+    # activate_on_events это активация по событию в журнале.
     # Формируется Трассиром 
     activate_on_events(  # noqa # type: ignore
         event, "", lambda ev: handle_camera_event(ev, ERR_FILE_NAME)

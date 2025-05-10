@@ -11,7 +11,7 @@ import time
         <company>EugeniiPetrov</company>
         <email>p174@mail.ru</email>
         <title>Receive_events</title>
-        <version>1.0</version>
+        <version>1.1</version>
 </parameters>
 """
 
