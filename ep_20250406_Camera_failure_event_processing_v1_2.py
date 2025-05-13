@@ -111,10 +111,9 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
                     )
                 )  # localtime было
             )
-            message_to_write = "Имя сервера: {} Имя: {}, событие: {}, ".format(  # noqa
+            message_to_write = "Cервер: {} Имя: {}, Cобытие: {}, ".format(  # noqa
                 server_name, ev.origin_object.name, ev.type
             )
-            message_to_user(message_to_write)  # noqa
             err_log_file.write(message_to_write)
             if is_full_info:
                 message_to_write = "ИД камера: {} , ИД сервера: {} , ".format(  # noqa
@@ -156,6 +155,7 @@ def message_err_ev(server_name, ev):
         server_name, ev.origin_object.name, ev.type
     )
     message_to_user(message_to_write)  # noqa
+    return message_to_user
 
 
 def get_linux_document_folder_path():
