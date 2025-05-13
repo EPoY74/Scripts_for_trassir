@@ -16,20 +16,22 @@ import time
 </parameters>
 """
 
-# Переопределяю на более человекочитаемые имена 
-# и в том числе, что бы в vscode было меньше ошибок, 
+# Переопределяю на более человекочитаемые имена
+# и в том числе, что бы в vscode было меньше ошибок,
 # так как message и settings это встроенные функции в Trassir
 
 # Вывод пропадающего сообщения в трей (справа внизу экрана)
-message_to_user = message  # type: ignore # noqa 
+message_to_user = message  # type: ignore # noqa
 
 # Доступ к настройкам сервера
-server_settings = settings # type: ignore # noqa
+server_settings = settings  # type: ignore # noqa
+
 
 class FileHandleError(Exception):
     """
     Для пробрасывания сообщений с моим описанием ошибки
     """
+
     pass
 
 
@@ -85,7 +87,9 @@ def get_screenshot_folder(server_id):
     """
 
     screenshot_folder_path = get_linux_path(
-        "/", server_id, "system_wide_options",
+        "/",
+        server_id,
+        "system_wide_options",
     )
     return str(server_settings(screenshot_folder_path)["screenshots_folder"])  # noqa
 
@@ -107,10 +111,10 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
                     )
                 )  # localtime было
             )
-            message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
-                ev.origin_object.name, ev.type
+            message_to_write = "Имя сервера: {} Имя: {}, событие: {}, ".format(  # noqa
+                server_name, ev.origin_object.name, ev.type
             )
-            # message_to_user(message_to_write)  # noqa
+            message_to_user(message_to_write)  # noqa
             err_log_file.write(message_to_write)
             if is_full_info:
                 message_to_write = "ИД камера: {} , ИД сервера: {} , ".format(  # noqa
@@ -118,7 +122,7 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
                     ev.origin_server,
                 )
                 err_log_file.write(message_to_write)
-            err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
+            # err_log_file.write("Имя сервера: {} ".format(server_name))  # noqa
             # err_log_file.write("Имя сервера: %s " % server_name)
     except (IOError, KeyError, TypeError) as err:  # noqa
         message_error = "Ошибка при логировании события {}\n".format(  # noqa
@@ -129,30 +133,30 @@ def write_err_to_file(ev, is_full_info, server_name, full_err_filename):
         #  и вызывает ошибку
         #  Written for Python 2.7 — raise ... from ... syntax
         #  is not supported and causes an error
-        raise(FileHandleError(message_error)) # noqa
+        raise (FileHandleError(message_error))  # noqa
 
 
 def get_os():
     """
-	Проверяю какая операционная система
+    Проверяю какая операционная система
     """
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith("win"):
         return "Windows"
-    elif sys.platform.startswith('linux'):
+    elif sys.platform.startswith("linux"):
         return "Linux"
     else:
         return "Unknown OS"
-    
 
-def message_err_ev(ev):
+
+def message_err_ev(server_name, ev):
     """
     Выводит сообщение нв экран
     """
-    message_to_write = "Имя: {}, событие: {}, ".format(  # noqa
-                ev.origin_object.name, ev.type
-            )
+    message_to_write = "Сервер: {} Имя: {}, событие: {}, ".format(  # noqa
+        server_name, ev.origin_object.name, ev.type
+    )
     message_to_user(message_to_write)  # noqa
-    
+
 
 def get_linux_document_folder_path():
     """
@@ -162,10 +166,10 @@ def get_linux_document_folder_path():
     if documents_dir is None:
         # home_dir = str(os.getenv("HOME"))
         # documents_dir = os.path.join(home_dir, "Documents")
-        
+
         # Писать без проблем получилось только сюда,
         #  в другие места - проблема с правами
-        documents_dir = "/tmp" 
+        documents_dir = "/tmp"
     return documents_dir
 
 
@@ -174,17 +178,17 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     Пишу требуемые события по неисправностям
     камер в файл errors.log
     """
+    server_name = get_server_name(ev.origin_server)
     # Вывожу сообщение в любом случае
     # До записи в файл
-    message_err_ev(ev)
-    # Если это видеосервер то False 
+    message_err_ev(server_name, ev)
+    # Если это видеосервер то False
     # Если клиент на ПК, то True
     is_client = False
 
     os_system_name = get_os()
     # Проверяю наличие папки со скриншотами по уникальному
     # адресу, характерному только для ПК клиента
-    server_name = get_server_name(ev.origin_server)
     try:
         err_filelog_folder = str(
             server_settings("/client/system_wide_options")["screenshots_folder"]  # noqa
@@ -193,17 +197,16 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
     except (IOError, KeyError, TypeError) as err:  # noqa
         message_to_user(err)  # noqa
         err_filelog_folder = ""
-    if is_client and (os_system_name == "Linux") :
+    if is_client and (os_system_name == "Linux"):
         err_filelog_folder = get_linux_document_folder_path()
         # message_to_user("Пишу в папку {}".format(err_filelog_folder)) # noqa
-        
-
 
     # Формирую имя и путь файла для логирования
-    if ((len(err_filelog_folder) > 0) 
+    if (
+        (len(err_filelog_folder) > 0)
         and (is_client is False)
-        and (os_system_name == "Windows")):
-        # message_to_user("Client False")
+        and (os_system_name == "Windows")
+    ):
         full_err_filename = (
             err_filelog_folder.replace("/", "\\")
             + "\\"
@@ -211,10 +214,11 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             + "_"
             + err_log_filename
         )
-    if ((len(err_filelog_folder) > 0) 
+    if (
+        (len(err_filelog_folder) > 0)
         and is_client
-        and (os_system_name == "Linux")):
-        # message_to_user("Client True")
+        and (os_system_name == "Linux")
+    ):
         full_err_filename = (
             err_filelog_folder
             + "/"
@@ -223,7 +227,6 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
             + err_log_filename
         )
     else:
-        # message_to_user("Client Else")
         full_err_filename = (
             get_screenshot_folder(ev.origin_server)
             + "/"
@@ -238,7 +241,7 @@ def handle_camera_event(ev, err_log_filename, is_full_info=False):
 
 for event in events_to_handle:
     # activate_on_events это активация по событию в журнале.
-    # Формируется Трассиром 
+    # Формируется Трассиром
     activate_on_events(  # noqa # type: ignore
         event, "", lambda ev: handle_camera_event(ev, ERR_FILE_NAME)
     )
