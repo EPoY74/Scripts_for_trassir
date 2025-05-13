@@ -43,14 +43,17 @@ def main():
     configuration_oblects = objects_list(TARGET_COFINURATION_OBJECT)  # noqa # type: ignore
     try:
         with open(
-            PATH_AND_FILENAME_TO_WRITE, FILE_OPENING_MODE, buffering=1
+            PATH_AND_FILENAME_TO_WRITE,
+            FILE_OPENING_MODE,
+            encoding="utf-8",
+            buffering=1,
         ) as file_for_info:
             # pass
             for index, enum_object_info in enumerate(
                 configuration_oblects, start=1
             ):
                 info_of_object = "{}. {}\n".format(  #  noqa
-                    index, enum_object_info
+                    index, str(enum_object_info)
                 )
                 # message_to_user(info_of_server)
                 file_for_info.write(info_of_object)
