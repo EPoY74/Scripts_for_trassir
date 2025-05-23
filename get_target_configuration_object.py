@@ -45,7 +45,6 @@ def main():
         with open(
             PATH_AND_FILENAME_TO_WRITE,
             FILE_OPENING_MODE,
-            encoding="utf-8",
             buffering=1,
         ) as file_for_info:
             # pass
